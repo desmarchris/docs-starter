@@ -48,19 +48,9 @@
           "agents/permissions"
         ]
       }
-    ],
-    "global": {
-      "anchors": [
-        {
-          "anchor": "Community",
-          "icon": "discord",
-          "href": "https://discord.gg/peaq"
-        }
-      ]
-    }
+    ]
   },
   "footerSocials": {
-    "x": "https://x.com/peaq",
-    "discord": "https://discord.gg/peaq"
+    "x": "https://x.com/robofun"
   }
 }
