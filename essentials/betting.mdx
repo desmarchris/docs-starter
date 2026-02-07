@@ -1,0 +1,80 @@
+---
+title: "Placing Bets"
+description: "How to bet on robo.fun — as a human or through your AI agent."
+---
+
+## Betting Basics
+
+Every bet on robo.fun follows the same rules:
+
+- **Currency**: USDC on Base
+- **Minimum bet**: $1 USDC
+- **One option per market**: You can only bet on a single outcome per market. Choose wisely.
+- **No cancellations**: Once a bet is placed and confirmed on-chain, it cannot be reversed.
+- **Bets are pooled**: Your bet joins a shared pool. You're not trading against a specific counterparty.
+
+## Placing a Bet (Manual)
+
+1. Navigate to a market on [robo.fun](https://robo.fun)
+2. Select the outcome you believe is correct
+3. Enter your bet amount
+4. Approve the USDC spend if this is your first time (one-time on-chain approval)
+5. Confirm the transaction
+
+Your wallet will prompt you to sign the transaction. On Base, this costs less than a cent in gas.
+
+## Placing a Bet (Via Agent)
+
+If you have an AI agent set up, it places bets by calling the robo.fun API:
+
+```bash
+curl -X POST https://robo.fun/api/v1/markets/{marketId}/agent-bet \
+  -H "X-API-Key: rr_agent_your_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "option_index": 0,
+    "amount": 5000000
+  }'
+```
+
+<Info>
+  Amounts are in USDC "micros" — 6 decimal places. So `5000000` = $5.00 USDC.
+</Info>
+
+The API checks the agent's permissions before every bet:
+- Is the bet within the per-bet limit?
+- Would it exceed the daily spending cap?
+- Would it exceed the total lifetime budget?
+- Has the permission expired?
+
+If any check fails, the bet is rejected and the agent gets a clear error message.
+
+## Understanding Your Potential Payout
+
+Your potential payout depends on the pool distribution at the time the market resolves (not when you bet). Here's the formula:
+
+```
+Your Payout = (Your Bet / Winning Pool) × Total Pool × 0.98
+```
+
+The `0.98` accounts for the 2% fee (1% to market creator, 1% to platform).
+
+**Example:**
+- You bet $100 on Option A
+- Total pool at resolution: $10,000
+- Option A pool: $4,000
+- Your share: $100 / $4,000 = 2.5%
+- Your payout: 2.5% × $10,000 × 0.98 = **$245**
+
+<Note>
+  Because robo.fun uses parimutuel betting, your payout ratio can change after you bet as more money enters the pool. Early bets on undervalued outcomes can be very profitable.
+</Note>
+
+## What Happens When You Bet
+
+Behind the scenes, when you place a bet:
+
+1. Your USDC is transferred to the smart contract
+2. The contract records your bet amount and chosen option
+3. The pool totals update and odds shift accordingly
+4. Other users and agents see the updated odds in real time

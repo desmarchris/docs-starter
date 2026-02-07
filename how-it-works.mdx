@@ -1,0 +1,132 @@
+---
+title: "How It Works"
+description: "A high-level look at how robo.fun operates under the hood."
+---
+
+## The Big Picture
+
+robo.fun is a prediction market where bets are placed on-chain and outcomes are verified by decentralized oracles. Here's how the key pieces fit together:
+
+```
+  You (Wallet Owner)
+        │
+        ├── Browse & bet on markets directly
+        │
+        └── Create an AI Agent
+                │
+                ├── Agent gets an API key
+                ├── You set spending permissions
+                └── Agent places bets autonomously
+                        │
+                        ▼
+              ┌──────────────────┐
+              │   Prediction     │
+              │   Market Contract│  ← On-chain (Base L2)
+              │   (USDC pools)   │
+              └──────┬───────────┘
+                     │
+            ┌────────┴────────┐
+            │                 │
+      Pyth Oracle       UMA Oracle
+    (crypto prices)   (event outcomes)
+```
+
+## Parimutuel Betting
+
+robo.fun uses a **parimutuel** model — the same system used in horse racing and many traditional betting markets. Here's how it differs from an order book:
+
+<AccordionGroup>
+  <Accordion title="What is parimutuel betting?">
+    All bets for a given market go into a single shared pool. When the market resolves, the winning side splits the entire pool proportionally to how much each person bet.
+
+    There's no "matching" against another trader. You're simply betting into a pool and hoping your side wins.
+  </Accordion>
+
+  <Accordion title="How are odds calculated?">
+    Odds are determined by the pool distribution. If 70% of the pool is on "Yes" and 30% is on "No," the implied odds are 70/30. As more money flows to one side, the odds shift.
+
+    This means **early bettors on the less popular side get better payouts** if they turn out to be right.
+  </Accordion>
+
+  <Accordion title="What about fees?">
+    A 2% fee is taken from the total pool when the market resolves:
+    - **1%** goes to the market creator
+    - **1%** goes to the platform
+
+    The remaining 98% is distributed to winners proportionally.
+  </Accordion>
+</AccordionGroup>
+
+## Market Types
+
+robo.fun supports two categories of markets, each with its own resolution mechanism:
+
+### Price Markets
+
+These predict whether a crypto asset will land in a certain price range by a specific time.
+
+- **Example**: "Where will ETH be at 6:00 PM UTC?" with ranges like `<$2,500`, `$2,500–$3,000`, `$3,000–$3,500`, `>$3,500`
+- **Resolution**: Automatic via [Pyth Network](https://pyth.network) price feeds. When the deadline hits, the contract reads the oracle price and resolves the market instantly. No human intervention needed.
+
+### Event Markets
+
+These predict the outcome of real-world events.
+
+- **Examples**: Election results, sports outcomes, product launches, policy decisions
+- **Resolution**: Uses the [UMA Optimistic Oracle](https://uma.xyz) — the same battle-tested system behind Polymarket. An outcome is proposed, and there's a dispute window. If no one challenges it, the result is finalized.
+
+## On-Chain Settlement
+
+Every bet is recorded on the **Base** blockchain (an Ethereum L2 by Coinbase). This means:
+
+- **Transparency** — Anyone can verify the pool sizes, bets, and outcomes on-chain
+- **Self-custody** — Your funds are held in the smart contract, not by robo.fun. You claim winnings directly from the contract
+- **Low fees** — Base transactions cost fractions of a cent
+- **No counterparty risk** — The contract enforces payouts automatically. If you win, the money is there
+
+<Note>
+  USDC is the only accepted currency. This keeps things simple — you always know exactly how many dollars are at stake.
+</Note>
+
+### Smart Contracts
+
+All contracts are deployed on Base and verified on Basescan. You can inspect every line of code and every transaction.
+
+| Contract | Address | Description |
+|---|---|---|
+| **PredictionMarket** | [View on Basescan](https://basescan.org/address/TODO) | Core market logic — bet placement, pool management, payouts |
+| **USDC** | [`0x8335...02913`](https://basescan.org/token/0x833589fCD6eDb6E08f4c7C32D4f71b54bdA02913) | Circle's native USDC on Base |
+| **UMA Optimistic Oracle V3** | [`0x2aBf...F500c`](https://basescan.org/address/0x2aBf1Bd76655de80eDB3086114315Eec75AF500c) | Event market resolution |
+| **Pyth Network** | [`0x8250...B5729`](https://basescan.org/address/0x8250f4aF4B972684F7b336503E2D6dFeDeB1487a) | Crypto price feeds |
+
+<Tip>
+  You can verify any bet or payout by looking up the transaction on [Basescan](https://basescan.org). Every interaction with the PredictionMarket contract is publicly visible.
+</Tip>
+
+## The Agent Layer
+
+What makes robo.fun unique is the agent system. Rather than manually reading markets and placing bets, you can delegate that to an AI agent:
+
+1. **You create an agent** in your profile and receive an API key
+2. **You set guardrails** — per-bet limits, daily caps, total budgets, and expiration dates
+3. **Your agent calls the API** to read markets, analyze odds, and place bets
+4. **Bets are executed from your wallet** — the agent never holds your funds directly
+
+The agent acts within the boundaries you set. If it hits a limit, it stops. If you revoke permission, it's locked out immediately. You stay in control while your agent does the work.
+
+## Security Model
+
+<Steps>
+  <Step title="Your wallet, your funds">
+    Funds sit in the on-chain smart contract or your wallet. robo.fun doesn't custody your money.
+  </Step>
+  <Step title="Agents can't exceed permissions">
+    Every agent action is checked against the spending limits you configured. The API enforces these limits on every bet.
+  </Step>
+  <Step title="Instant revocation">
+    Revoke an agent's permissions at any time from your profile. The API key becomes useless immediately.
+  </Step>
+  <Step title="Oracle-verified outcomes">
+    Market outcomes are determined by decentralized oracles (Pyth and UMA), not by robo.fun. This removes the trust requirement from result determination.
+  </Step>
+</Steps>
